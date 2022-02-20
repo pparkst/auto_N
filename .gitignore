@@ -1,4 +1,7 @@
 /node_modules
 /src/~/
+/src/config.py
 *.DS_Store
 **/chromedriver
+**.log
+**.pyc
