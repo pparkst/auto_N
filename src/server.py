@@ -35,8 +35,8 @@ def get_selenium_driver(headless=True):
 
 def get_original_chrome_driver():
     try:
-        subprocess.call('Google\\ Chrome --remote-debugging-port=9222 --user-data-dir="~/ChromeProfile"', shell=True)
-        time.sleep(5)
+        #subprocess.call('Google\\ Chrome --remote-debugging-port=9222 --user-data-dir="~/ChromeProfile"', shell=True)
+        #time.sleep(5)
         option = Options()
 
         # tor
@@ -72,6 +72,9 @@ def get_original_firefox_driver():
 
         # just browser
         driver = webdriver.Firefox(executable_path="./driver/geckodriver")
+        #driver.implicitly_wait(10)
+
+    
 
         # PROXY = "socks5://127.0.0.1:9150" # IP:PORT or HOST:PORT
         # chrome_options = webdriver.ChromeOptions()
@@ -115,12 +118,60 @@ def n_login(driver):
     driver.find_element_by_id("j_password").send_keys(KEY.PASSWORD)
     driver.find_element_by_class_name("uk-form-large").submit()
 
+
+def k_product(driver):
+    driver.get("https://www.kasina.co.kr/goods/populate.php")
+    #"//div[@class='fc-day-content' and text()='15']"
+
+    arr_spn = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "//span[@class='item_name']"))
+    )
+
+    #arr_spn = driver.find_elements_by_class_name("item_name")
+
+    for spn in arr_spn:
+        if "TERRASCAPE" in spn.text:
+            spn.click()
+
+
+
+    # for spn in arr_spn:
+    #     print(spn)
+    #     print(spn.text)
+
+def k_selectSizeAndCheckout(driver):
+
+    select = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "chosen-select"))
+    )
+    #select = driver.find_element_by_name("optionSnoInput")
+    print(select)
+    #??
+    opt_arr = select.find_elements_by_css_selector("*")
+    print(opt_arr)
+
+    for opt in opt_arr:
+        val = opt.value
+        length = len(val)
+        if "240" in val[length-3 : length]:
+            print(val)
+            opt.click()
+
+
 try:
+    start = time.time()
     driver = get_original_firefox_driver()
-    k_login(driver)
+    #k_login(driver)
+    k_product(driver)
+    k_selectSizeAndCheckout(driver)
     #n_login()
+
+    end = time.time()
+    print(format(end-start))
 except Exception as e:
     print(e)
     driver.close()
 finally:
+    time.sleep(10)
+    driver.quit()
     print("finally")
