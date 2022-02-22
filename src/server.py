@@ -72,7 +72,7 @@ def get_original_firefox_driver():
 
         # just browser
         driver = webdriver.Firefox(executable_path="./driver/geckodriver")
-        #driver.implicitly_wait(10)
+        driver.implicitly_wait(10)
 
     
 
@@ -123,15 +123,18 @@ def k_product(driver):
     driver.get("https://www.kasina.co.kr/goods/populate.php")
     #"//div[@class='fc-day-content' and text()='15']"
 
-    arr_spn = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "//span[@class='item_name']"))
-    )
+    # arr_spn = WebDriverWait(driver, 10).until(
+    #     EC.presence_of_element_located((By.XPATH, "//span[@class='item_name']"))
+    # )
 
-    #arr_spn = driver.find_elements_by_class_name("item_name")
+    arr_spn = driver.find_elements_by_class_name("item_name")
+
+    print(arr_spn)
 
     for spn in arr_spn:
         if "TERRASCAPE" in spn.text:
             spn.click()
+            break
 
 
 
@@ -140,22 +143,41 @@ def k_product(driver):
     #     print(spn.text)
 
 def k_selectSizeAndCheckout(driver):
+    print("k_selectSizeAndCheckout")
 
-    select = WebDriverWait(driver, 10).until(
+    select = Select(WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, "chosen-select"))
-    )
+    ))
     #select = driver.find_element_by_name("optionSnoInput")
     print(select)
-    #??
-    opt_arr = select.find_elements_by_css_selector("*")
-    print(opt_arr)
 
-    for opt in opt_arr:
-        val = opt.value
-        length = len(val)
-        if "240" in val[length-3 : length]:
-            print(val)
-            opt.click()
+    opt_arr = WebDriverWait(driver, 20).until(
+        EC.element_to_be_clickable((By.XPATH, "//select[@class='chosen-select']//option[contains(@value,'240')]"))
+    )
+    print(opt_arr.text)
+    opt_arr.click()
+
+
+
+    
+
+                    # $("[name='optionSnoInput'] option:eq(2)").prop("selected", true)
+                    # $("[name='optionSnoInput']").trigger("onchange")
+
+
+    # #??
+    # #opt_arr = select.find_elements_by_css_selector("*")
+    # time.sleep(3)
+    # print(opt_arr)
+    # print(opt_arr.text)
+    # opt_arr.click()
+
+    # for opt in opt_arr:
+    #     val = opt.get_attribute("value")
+    #     length = len(val)
+    #     if "240" in val[length-3 : length]:
+    #         print(val)
+    #         opt.click()
 
 
 try:
@@ -169,7 +191,7 @@ try:
     end = time.time()
     print(format(end-start))
 except Exception as e:
-    print(e)
+    print("Exception", e)
     driver.close()
 finally:
     time.sleep(10)
