@@ -67,7 +67,7 @@ def get_original_firefox_driver():
         profile.set_preference("network.proxy.socks_remote_dns", False)
         profile.update_preferences()
         
-        # use proxy
+        # use proxy required open the 9150 port (e.g. tor
         #driver = webdriver.Firefox(executable_path="./driver/geckodriver", firefox_profile=profile)
 
         # just browser
@@ -100,6 +100,7 @@ def k_login(driver):
     driver.find_element_by_id("loginPwd").send_keys(KEY.PASSWORD)
     time.sleep(1)
     driver.find_element_by_id("formLogin").submit()
+    time.sleep(2)
 
 
 
@@ -145,24 +146,27 @@ def k_product(driver):
 def k_selectSizeAndCheckout(driver):
     print("k_selectSizeAndCheckout")
 
-    select = Select(WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "chosen-select"))
-    ))
-    #select = driver.find_element_by_name("optionSnoInput")
-    print(select)
-
-    opt_arr = WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, "//select[@class='chosen-select']//option[contains(@value,'240')]"))
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "chosen-container-single-nosearch"))
     )
-    print(opt_arr.text)
-    opt_arr.click()
-
-
-
     
+    # select2 = Select(driver.find_element_by_name("//select[@name='optionSnoInput']"))
 
-                    # $("[name='optionSnoInput'] option:eq(2)").prop("selected", true)
-                    # $("[name='optionSnoInput']").trigger("onchange")
+    # print(select2)
+
+    # select2.select_by_index(2)
+    driver.execute_script("$('[name=optionSnoInput] option:eq(2)').prop('selected', true); $('[name=optionSnoInput]').trigger('onchange')")
+    time.sleep(2)
+    btn_buy = driver.find_element_by_class_name("btn_add_order")
+    btn_buy.click()
+    
+    print("End")
+    # print(opt_arr.text)
+    # opt_arr.click()
+
+
+    # $("[name='optionSnoInput'] option:eq(2)").prop("selected", true)
+    # $("[name='optionSnoInput']").trigger("onchange")
 
 
     # #??
@@ -178,12 +182,24 @@ def k_selectSizeAndCheckout(driver):
     #     if "240" in val[length-3 : length]:
     #         print(val)
     #         opt.click()
+def k_checkout(driver):
+    print("k_checkout")
+    chk_noti = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable(By.ID, "termAgree_orderCheck")
+    )
+    chk_noti.click()
+
+    btn_checkout = driver.find_element_xpath("//*[@class='btn_order_buy' and @class='order-buy']")
+    btn_checkout.click()
+
+
+
 
 
 try:
     start = time.time()
     driver = get_original_firefox_driver()
-    #k_login(driver)
+    k_login(driver)
     k_product(driver)
     k_selectSizeAndCheckout(driver)
     #n_login()
