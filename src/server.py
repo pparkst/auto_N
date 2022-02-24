@@ -89,7 +89,7 @@ def get_original_firefox_driver():
 def k_login(driver):
     driver.get("https://www.kasina.co.kr/member/login.php")
 
-    input_id = WebDriverWait(driver, 10).until(
+    input_id = WebDriverWait(driver, 400).until(
         EC.presence_of_element_located((By.ID, "loginId"))
     )
 
@@ -120,7 +120,7 @@ def n_login(driver):
     driver.find_element_by_class_name("uk-form-large").submit()
 
 
-def k_product(driver):
+def k_product(driver, itemName):
     driver.get("https://www.kasina.co.kr/goods/populate.php")
     #"//div[@class='fc-day-content' and text()='15']"
 
@@ -133,7 +133,7 @@ def k_product(driver):
     print(arr_spn)
 
     for spn in arr_spn:
-        if "TERRASCAPE" in spn.text:
+        if itemName in spn.text:
             spn.click()
             break
 
@@ -146,8 +146,9 @@ def k_product(driver):
 def k_selectSizeAndCheckout(driver):
     print("k_selectSizeAndCheckout")
 
+    #chosen-container
     WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "chosen-container-single-nosearch"))
+        EC.presence_of_element_located((By.CLASS_NAME, "chosen-container"))
     )
     
     # select2 = Select(driver.find_element_by_name("//select[@name='optionSnoInput']"))
@@ -184,32 +185,66 @@ def k_selectSizeAndCheckout(driver):
     #         opt.click()
 def k_checkout(driver):
     print("k_checkout")
+    #driver.execute_script("arguments[0].scrollIntoView(); arguments[0].click();")
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+    #phoneNum
+
+    # input_phoneNum = WebDriverWait(driver, 400).until(
+    #     EC.presence_of_element_located((By.ID, "phoneNum"))
+    # )
+    # input_phoneNum.send_keys("\n")
+
     chk_noti = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable(By.ID, "termAgree_orderCheck")
+        EC.presence_of_element_located((By.ID, "termAgree_orderCheck"))
     )
+
+    chk_kakaoPay = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "settleKind_pk"))
+    )
+    print("chk_noti ", chk_noti)
+    print("chk_kakaoPay ", chk_kakaoPay)
+
+    chk_kakaoPay.click()
+
     chk_noti.click()
 
-    btn_checkout = driver.find_element_xpath("//*[@class='btn_order_buy' and @class='order-buy']")
+    btn_checkout = driver.find_element_by_class_name("btn_order_buy")
     btn_checkout.click()
 
 
+def inicisPopup(driver):
+    time.sleep(2)
+    driver.switch_to_default_content()
 
+    btn_next = WebDriverWait(driver, 60).until(
+        EC.element_to_be_clickable((By.ID, "CardBtn"))
+    )
+
+    btn_agree = driver.find_element_by_id("inputAll")
+    btn_agree.click()
+
+    btn_kakaoPay = driver.find_element_by_id("payCode10")
+    btn_kakaoPay.click()
+    
+    btn_next.click()
 
 
 try:
     start = time.time()
-    driver = get_original_firefox_driver()
-    k_login(driver)
-    k_product(driver)
-    k_selectSizeAndCheckout(driver)
-    #n_login()
 
-    end = time.time()
-    print(format(end-start))
+    driver = get_original_firefox_driver()
+
+    k_login(driver)
+    k_product(driver, "NIKE DUNK HI")
+    k_selectSizeAndCheckout(driver)
+    k_checkout(driver)
+    #inicisPopup(driver)
+    #n_login()
 except Exception as e:
     print("Exception", e)
     driver.close()
 finally:
-    time.sleep(10)
+    time.sleep(60)
     driver.quit()
-    print("finally")
+    end = time.time()
+    print(format(end-start))
