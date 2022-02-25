@@ -3,6 +3,8 @@ import selenium
 import subprocess
 import chromedriver_autoinstaller
 import config
+import common
+import pyperclip
 
 from selenium import webdriver
 from selenium.webdriver import ActionChains
@@ -142,10 +144,8 @@ def k_product(driver, itemName):
     # for spn in arr_spn:
     #     print(spn)
     #     print(spn.text)
-
-def k_selectSizeAndCheckout(driver):
-    print("k_selectSizeAndCheckout")
-
+def k_selectSize(driver):
+    print("k_selectSize")
     #chosen-container
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, "chosen-container"))
@@ -157,11 +157,14 @@ def k_selectSizeAndCheckout(driver):
 
     # select2.select_by_index(2)
     driver.execute_script("$('[name=optionSnoInput] option:eq(2)').prop('selected', true); $('[name=optionSnoInput]').trigger('onchange')")
+
+def k_goToCheckout(driver):
+    print("k_goToCheckout")
+
     time.sleep(2)
     btn_buy = driver.find_element_by_class_name("btn_add_order")
     btn_buy.click()
     
-    print("End")
     # print(opt_arr.text)
     # opt_arr.click()
 
@@ -211,6 +214,46 @@ def k_checkout(driver):
     btn_checkout = driver.find_element_by_class_name("btn_order_buy")
     btn_checkout.click()
 
+def k_goToNaverPay(driver):
+    print("k_goToNaverPay")
+    time.sleep(1.5)
+
+    btn_nPay = driver.find_element_by_class_name("npay_btn_pay")
+    btn_nPay.click()
+
+def naverLogin(driver):
+    #newTab switch Check,
+
+    print("naverLogin")
+    #driver.get('https://nid.naver.com/nidlogin.login?mode=form&url=https%3A%2F%2Fwww.naver.com')
+    time.sleep(1)
+    #driver.switch_to_default_content()
+
+    input_id = driver.find_element_by_name("id")
+    input_pw = driver.find_element_by_name("pw")
+
+    #import platform
+    #platform.system() return 'Windows'
+    #diff key wid = CONTROL, mac = COMMAND
+
+    input_id.click() 
+    pyperclip.copy(config.NAVER.USERNAME) 
+    input_id.send_keys(Keys.COMMAND, 'v')
+    time.sleep(1)
+
+    input_pw.click() 
+    pyperclip.copy(config.NAVER.PASSWORD) 
+    input_pw.send_keys(Keys.COMMAND, 'v')
+    time.sleep(1)
+
+    form = driver.find_element_by_id("log.login")
+    form.submit()
+    
+
+
+def naverCheckout(driver):
+    print("naverCheckout")
+
 
 def inicisPopup(driver):
     time.sleep(2)
@@ -228,23 +271,36 @@ def inicisPopup(driver):
     
     btn_next.click()
 
+def main(domain, productName, pay):
+    try:
+        start = time.time()
+        driver = get_original_firefox_driver()
 
-try:
-    start = time.time()
+        if domain == common.DOMAIN.KASINA:
+            k_login(driver)
+            k_product(driver, productName)
+            k_selectSize(driver)
+            if pay == common.PAY.KAKAOPAY:
+                k_goToCheckout(driver)
+                k_checkout(driver)
+            elif pay == common.PAY.NAVERPAY:
+                k_goToNaverPay(driver)
+                naverLogin(driver)
+        #else:
+            #n_login()
+            #inicisPopup(driver)
+    except Exception as e:
+        print("Exception", e)
+        driver.close()
+    finally:
+        time.sleep(60)
+        driver.quit()
+        end = time.time()
+        print(format(end-start))
 
-    driver = get_original_firefox_driver()
+main(common.DOMAIN.KASINA, "NIKE DUNK", common.PAY.NAVERPAY)
 
-    k_login(driver)
-    k_product(driver, "NIKE DUNK HI")
-    k_selectSizeAndCheckout(driver)
-    k_checkout(driver)
-    #inicisPopup(driver)
-    #n_login()
-except Exception as e:
-    print("Exception", e)
-    driver.close()
-finally:
-    time.sleep(60)
-    driver.quit()
-    end = time.time()
-    print(format(end-start))
+# driver = get_original_firefox_driver()
+# naverLogin(driver)
+# time.sleep(30)
+# driver.quit()
