@@ -4,8 +4,9 @@ import subprocess
 import chromedriver_autoinstaller
 import config
 import common
+import naverPay
 import pyperclip
-import pyautogui    
+import pyautogui 
 
 from selenium import webdriver
 from selenium.webdriver import ActionChains
@@ -255,9 +256,10 @@ def naverLogin(driver):
 def naverCheckout(driver):
     print("naverCheckout")
     #checkout = driver.find_element_by_class_name("btn_payment")
-    checkout = WebDriverWait(driver, 120).until(
+    checkout = WebDriverWait(driver, 150).until(
         EC.element_to_be_clickable((By.CLASS_NAME, "btn_payment"))
     )
+    time.sleep(1)
     checkout.click()
 
     #document.getElementsByClassName("btn_payment").click()
@@ -266,7 +268,8 @@ def naverCheckout(driver):
 
     #pyautogui
 
-
+    time.sleep(3)
+    
 def inicisPopup(driver):
     time.sleep(2)
     driver.switch_to_default_content()
@@ -299,6 +302,7 @@ def main(domain, productName, pay):
                 k_goToNaverPay(driver)
                 naverLogin(driver)
                 naverCheckout(driver)
+                naverPay.naverPayAutoCheckout()
         #else:
             #n_login()
             #inicisPopup(driver)
